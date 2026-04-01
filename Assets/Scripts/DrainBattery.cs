@@ -3,33 +3,35 @@ using UnityEngine;
 public class DrainBattery : MonoBehaviour
 {
 
-    public float drainRate = -15f;
+    public float drainRate;
+    private IDamagable currentColision;
 
     public void OnCollisionEnter2D(Collision2D collision)
     {
-        var bm = collision.gameObject.GetComponent<BatteryManager>();
+        IDamagable bm = collision.gameObject.GetComponent<IDamagable>();
         if(bm != null)
         {
-            bm.RegisterHazard();
-        }
-    }
-
-    public void OnCollisionStay2D(Collision2D collision)
-    {   
-        BatteryManager bm = collision.gameObject.GetComponent<BatteryManager>();
-        if(bm != null)
-        {
-            bm.ApplyEnergyChange(drainRate * Time.deltaTime);
+            currentColision = bm;
         }
     }
 
     public void OnCollisionExit2D(Collision2D collision)
     {
-        var bm = collision.gameObject.GetComponent<BatteryManager>();
-        if (bm != null)
+        IDamagable bm = collision.gameObject.GetComponent<IDamagable>();
+        if (bm != null && bm == currentColision)
         {
-            bm.UnregisterHazard();
+            currentColision = null;
         }
     }
+
+    private void FixedUpdate()
+    {
+        if (currentColision != null)
+        {
+            currentColision.TakeDamage(-drainRate * Time.fixedDeltaTime);
+        }
+
+    }
+
 
 }

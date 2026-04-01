@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerController : MonoBehaviour, IMovable, IPlayer
+public class PlayerController : MonoBehaviour, IMovable, IPlayer, IDamagable
 {
     [Header("Jump detection setting")]
     public Transform groundCheck;
@@ -11,8 +11,15 @@ public class PlayerController : MonoBehaviour, IMovable, IPlayer
 
     [Header("IDamagable interface")]
 
+    public float CurrentHealth => currentHealth;
+    public float MaxHealth => 100f;
 
 
+    public float currentHealth;
+
+
+    [Header("Sprites")]
+    [SerializeField] private Sprite[] frames;
 
     [SerializeField] private float moveSpeed = 5f;
 
@@ -26,6 +33,20 @@ public class PlayerController : MonoBehaviour, IMovable, IPlayer
     // Satisfying your IMovable interface from earlier!
     public float Speed => moveSpeed;
 
+    void Start()
+    {
+        currentHealth = MaxHealth;
+    }
+
+    private void FixedUpdate()
+    {
+        if (currentHealth >= 100) currentHealth = 100f; 
+        Move(moveInput);
+        Jump(jumpButton);        
+        
+        
+    }
+
     public void OnMove(InputAction.CallbackContext context)
     {
         // This stores the WASD values (-1 to 1) into our variable
@@ -35,15 +56,6 @@ public class PlayerController : MonoBehaviour, IMovable, IPlayer
     public void OnJump(InputAction.CallbackContext context)
     {
         jumpButton = context.performed;
-    }
-
-    private void FixedUpdate()
-    {
-        
-        Move(moveInput);
-        Jump(jumpButton);        
-        
-        
     }
 
     public void Move(Vector2 direction)
@@ -77,6 +89,15 @@ public class PlayerController : MonoBehaviour, IMovable, IPlayer
         Gizmos.color = Color.yellow;
 
         Gizmos.DrawSphere(groundCheck.position, groundRadius);
+    }
+
+    public void TakeDamage(float damageAmount)
+    {
+        currentHealth -= damageAmount;
+        if (CurrentHealth <= 0)
+        {
+            Die();
+        }
     }
 
     public void Die()
